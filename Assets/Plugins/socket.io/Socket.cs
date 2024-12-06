@@ -335,13 +335,23 @@ namespace socket.io {
                         seperatorLen = 1;
                     }
 
+                    var hasEventData = seperateIndex > -1;
+
+                    if (!hasEventData) // Event without a payload?
+                    {
+                        seperateIndex = pkt.body.Length - 1;
+                    }
                     var eventName = pkt.body.Substring(2, seperateIndex - 3);
                     if (!_handlers.ContainsKey(eventName)) {
                         Debug.LogWarningFormat("{0} event doesn't have a handler", eventName);
                         break;
                     }
 
-                    var data = pkt.body.Substring(seperateIndex + seperatorLen, pkt.body.Length - seperateIndex - seperatorLen - 1);
+                    var data = hasEventData
+                        ? pkt.body.Substring(seperateIndex + seperatorLen,
+                            pkt.body.Length - seperateIndex - seperatorLen - 1)
+                        : null;
+                    
                     _handlers[eventName](data);
                     break;
 
